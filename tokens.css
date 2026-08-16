@@ -1,0 +1,96 @@
+/* Hallmark · tokens · theme: Cobalt · genre: modern-minimal
+ * Portable token layer. Every colour, font, space, size, easing and duration
+ * used by index.html is declared here and referenced by name.
+ * Axes — paper: cool light (L 98.5%, hue ~250) · display: grotesk-sans · accent: electric cobalt
+ */
+
+:root {
+  /* ── Paper & ink ─────────────────────────────────────────────── */
+  --color-paper:            oklch(98.5% 0.004 250);
+  --color-paper-2:          oklch(96.4% 0.006 252);
+  --color-rule:             oklch(90.0% 0.008 252);   /* 장식 헤어라인 — 대비 요건 없음 */
+  --color-rule-strong:      oklch(60.0% 0.014 254);   /* 컨트롤 경계 — 종이 위 3.1:1 */
+  --color-neutral:          oklch(48.0% 0.014 256);   /* 12px 라벨 — 종이 위 4.6:1 */
+  --color-muted:            oklch(46.0% 0.016 257);
+  --color-ink:              oklch(24.0% 0.020 258);
+  --color-ink-2:            oklch(34.0% 0.018 257);
+
+  /* ── The one signal ──────────────────────────────────────────── */
+  --color-accent:           oklch(58.0% 0.200 256);   /* 경계·강조 */
+  --color-accent-hover:     oklch(53.0% 0.200 256);   /* 종이 위 텍스트 — 5.1:1 */
+  --color-accent-fill:      oklch(52.0% 0.200 256);   /* 채운 버튼 배경 — 흰 라벨 5.2:1 */
+  --color-accent-fill-hover: oklch(47.0% 0.190 256);
+  --color-accent-fill-active: oklch(42.0% 0.170 256);
+  --color-accent-ink:       oklch(98.5% 0.006 250);
+  --color-accent-soft:      oklch(94.0% 0.030 256);
+  --color-focus:            oklch(58.0% 0.200 256);
+
+  /* ── The one dark band (typing stage) ────────────────────────── */
+  --color-graphite:         oklch(22.0% 0.016 260);
+  --color-graphite-2:       oklch(26.5% 0.016 260);
+  --color-rule-2:           oklch(32.0% 0.014 260);   /* 장식 헤어라인 */
+  --color-field-line:       oklch(56.0% 0.014 259);   /* 입력 필드 경계 — 3.3:1 */
+  --color-on-graphite:      oklch(95.0% 0.006 258);   /* 입력 완료 글자 */
+  --color-on-graphite-dim:  oklch(68.0% 0.012 258);   /* 미입력 지문 — 6.2:1 */
+  --color-on-graphite-mute: oklch(63.0% 0.014 259);   /* 메타·힌트 12px — 5.0:1 */
+  --color-accent-on-dark:   oklch(70.0% 0.170 256);
+
+  /* ── Status ──────────────────────────────────────────────────── */
+  --color-error:            oklch(48.0% 0.190 25);   /* 종이 위 13px — 4.6:1 */
+  --color-error-on-dark:    oklch(72.0% 0.170 25);
+  --color-error-wash:       oklch(58.0% 0.130 25);   /* 틀린 공백 블록 — 그래파이트 위 3.8:1 */
+
+  /* ── Type ────────────────────────────────────────────────────── */
+  --font-display: "Space Grotesk", "Pretendard Variable", Pretendard, ui-sans-serif, sans-serif;
+  --font-body:    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "Pretendard Variable", ui-monospace, monospace;
+
+  /* Major third (1.25) */
+  --text-xs:         0.75rem;
+  --text-sm:         0.8125rem;
+  --text-base:       1rem;
+  --text-md:         1.25rem;
+  --text-lg:         1.5625rem;
+  --text-xl:         1.9531rem;
+  --text-2xl:        2.4414rem;
+  /* 지문 크기 — 한글은 글자당 폭이 넓어 크게, 영문은 한 줄이 길어 한 단계 작게 */
+  --text-line:       clamp(1.0625rem, 3.6vw, 1.9531rem);
+  --text-line-sm:    clamp(1rem, 2.9vw, 1.5625rem);      /* 다음 줄 미리보기 */
+  --text-line-en:    clamp(1rem, 2.6vw, 1.5625rem);
+  --text-line-en-sm: clamp(1rem, 2.1vw, 1.25rem);
+  --text-figure:     clamp(2.75rem, 6vw, 4.5rem);
+  --text-figure-lg:  clamp(4rem, 10vw, 7rem);
+
+  /* ── Space (4 pt) ────────────────────────────────────────────── */
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4.5rem;
+
+  /* ── Line & radius ───────────────────────────────────────────── */
+  --rule:      1px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --ease-out:    cubic-bezier(0.16, 1, 0.30, 1);
+  --ease-in:     cubic-bezier(0.70, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-short:   120ms;
+  --dur-mid:     260ms;
+  --dur-long:    600ms;
+
+  /* ── Depth (named scale, never 9999) ─────────────────────────── */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-nav:     100;
+  --z-overlay: 1000;
+
+  /* ── Layout ──────────────────────────────────────────────────── */
+  --shell:       72rem;
+  --shell-pad:   clamp(1rem, 4vw, 2rem);
+}

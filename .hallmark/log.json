@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2026-08-16",
+    "genre": "modern-minimal",
+    "macrostructure": "Stat-Led",
+    "theme": "Cobalt",
+    "theme_axes": "cool-light / grotesk-sans / electric-cobalt",
+    "nav": "N9 Edge-aligned minimal",
+    "footer": "Ft2 Inline single line",
+    "enrichment": "none",
+    "brief": "타자연습 · 지문 2종 — 애국가 16줄(두벌식 자소 타/분) + 게티즈버그 연설 32줄(표준 WPM)",
+    "notes": "N9는 지문 선택 세그먼트가 붙으면서 wordmark-left / seg+CTA-right 형태로 확장됨"
+  }
+]

@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>타자연습 · 애국가</title>
+<meta name="description" content="애국가 16줄을 치면서 분당 타수와 정확도를 재는 한글 타자연습. 타수는 두벌식 자소 기준으로 셉니다." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="tokens.css" />
+
+<style>
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R4 V4
+ * Hallmark · genre: modern-minimal · macrostructure: Stat-Led · theme: Cobalt
+ * H4 Stat-Led knobs: number=tabular display, qualifier=below, secondary stats=row of three
+ * nav: N9 Edge-aligned minimal (knobs: CTA=outlined, wordmark=sans+accent square, padding=tight)
+ * footer: Ft2 Inline single line (knobs: order=credit/wordmark, separator=middot, density=spaced)
+ * enrichment: none — the typing stage is the artifact · tone: 계측적 · anchor hue: 256 (electric cobalt)
+ * audience: 한국어 타자 속도를 재고 싶은 일반 사용자 · use: 애국가 16줄을 끝까지 치고 분당 타수를 확인
+ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper);
+  color: var(--color-ink-2);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 400;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+h1, h2, h3 {
+  font-style: normal;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+  min-width: 0;
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.shell {
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--shell-pad);
+}
+
+/* 세로 플렉스에서 자식은 min-content 너비 아래로 안 줄어든다.
+   입력 필드의 고유 너비(size 기본값)가 좁은 화면을 밀어내는 걸 여기서 잠근다. */
+body > * { min-width: 0; }
+main { flex: 1 0 auto; min-width: 0; }
+section, .shell { min-width: 0; }
+
+.sr {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   N9 · Edge-aligned minimal nav
+   ───────────────────────────────────────────────────────────── */
+.nav {
+  border-bottom: var(--rule) solid var(--color-rule);
+  background: var(--color-paper);
+}
+.nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  padding-block: var(--space-sm);
+  min-height: 56px;
+}
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-base);
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+.wordmark::before {
+  content: "";
+  width: 7px; height: 7px;
+  background: var(--color-accent);
+  border-radius: 1px;
+}
+.nav__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* 지문 선택 — 코발트의 자 대고 그은 컨트롤. 활성 칸은 잉크로 채운다
+   (강조색은 커서·진행바 쪽에 남겨둔다). */
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: var(--rule) solid var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+}
+.seg__btn {
+  appearance: none;
+  min-height: 34px;
+  padding: 0 var(--space-sm);
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-neutral);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-out),
+              color var(--dur-short) var(--ease-out);
+}
+.seg__btn:hover { color: var(--color-ink); }
+.seg__btn[aria-checked="true"] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-weight: 600;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  min-height: 44px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-out),
+              border-color var(--dur-short) var(--ease-out),
+              color var(--dur-short) var(--ease-out);
+}
+.btn--outline {
+  background: transparent;
+  color: var(--color-ink);
+  border: var(--rule) solid var(--color-rule-strong);
+}
+.btn--outline:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }
+.btn--outline:active { background: var(--color-accent-soft); }
+.btn--primary {
+  background: var(--color-accent-fill);
+  color: var(--color-accent-ink);
+  border: var(--rule) solid var(--color-accent-fill);
+}
+.btn--primary:hover {
+  background: var(--color-accent-fill-hover);
+  border-color: var(--color-accent-fill-hover);
+}
+.btn--primary:active {
+  background: var(--color-accent-fill-active);
+  border-color: var(--color-accent-fill-active);
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ─────────────────────────────────────────────────────────────
+   The one dark band — the typing stage
+   ───────────────────────────────────────────────────────────── */
+.stage {
+  --line: var(--text-line);
+  --line-sm: var(--text-line-sm);
+  background: var(--color-graphite);
+  border-bottom: var(--rule) solid var(--color-rule);
+  cursor: text;
+}
+.stage[data-course="en"] {
+  --line: var(--text-line-en);
+  --line-sm: var(--text-line-en-sm);
+}
+.stage__inner {
+  padding-block: clamp(1.5rem, 4vw, var(--space-2xl));
+}
+.stage__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-on-graphite-mute);
+  font-variant-numeric: tabular-nums;
+}
+.stage__where b {
+  color: var(--color-accent-on-dark);
+  font-weight: 600;
+}
+.stage__clock { color: var(--color-on-graphite-dim); }
+
+.prompt {
+  margin: var(--space-lg) 0 0;
+  font-size: var(--line);
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: var(--color-on-graphite-dim);
+  min-height: calc(var(--line) * 1.55);
+}
+.w { white-space: nowrap; }
+.c {
+  border-bottom: 2px solid transparent;
+  transition: color var(--dur-short) var(--ease-out);
+}
+/* pre가 아니라 pre-wrap. pre는 공백을 보존하는 대신 그 자리에서 줄바꿈까지 막는다. */
+.c--sp { white-space: pre-wrap; }
+.c.is-ok     { color: var(--color-on-graphite); }
+.c.is-now    { color: var(--color-on-graphite); border-bottom-color: var(--color-accent-on-dark); }
+.c.is-cursor { border-bottom-color: var(--color-accent-on-dark); }
+.c.is-bad {
+  color: var(--color-error-on-dark);
+  text-decoration: underline wavy var(--color-error-on-dark);
+  text-underline-offset: 0.28em;
+  text-decoration-thickness: 1px;
+}
+/* 공백은 물결 밑줄이 보이지 않으니 따로 표시한다. 블록으로 채우면
+   공백이 잦은 영문에서 글자보다 더 튀어서, 밑줄 굵기로만 알린다. */
+.c--sp.is-bad { border-bottom-color: var(--color-error-wash); }
+
+.entry {
+  margin-top: var(--space-sm);
+  border-top: var(--rule) solid var(--color-rule-2);
+  padding-top: var(--space-sm);
+}
+.entry__field {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid var(--color-field-line);
+  background: transparent;
+  color: var(--color-on-graphite);
+  caret-color: var(--color-accent-on-dark);
+  font-family: var(--font-body);
+  font-size: var(--line);
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+.entry__field::placeholder { color: var(--color-on-graphite-mute); font-weight: 400; }
+/* 이 필드는 사실상 항상 포커스 상태다. 링 대신 밑줄 자체가 포커스 표시가 된다
+   — field-line(L56%) → accent-on-dark(L70%)로 바뀌므로 상태 변화가 눈에 보인다. */
+.entry__field:focus,
+.entry__field:focus-visible { border-bottom-color: var(--color-accent-on-dark); outline: none; }
+.entry__field.is-over { border-bottom-color: var(--color-error-on-dark); }
+.entry__field:disabled { color: var(--color-on-graphite-dim); }
+
+/* 다음에 올 줄 — 크기 한 단계 아래, 한 톤 어둡게. 순서가 곧 서열이라
+   1번째와 2번째 미리보기는 색으로 더 나누지 않는다. */
+.ahead {
+  display: grid;
+  gap: var(--space-2xs);
+  margin-top: var(--space-lg);
+}
+.ahead__line {
+  margin: 0;
+  font-size: var(--line-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--color-on-graphite-mute);
+  /* 마지막 줄 근처에서 빈 칸이 되어도 무대 높이가 흔들리지 않게 */
+  min-height: calc(var(--line-sm) * 1.5);
+}
+.stage.is-done .ahead { display: none; }
+
+/* 영문 지문인데 한글이 들어올 때 — 브라우저가 IME를 끌 방법이 없으니 알려주기라도 한다. */
+.ime {
+  margin: var(--space-xs) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  color: var(--color-error-on-dark);
+}
+.ime[hidden] { display: none; }
+
+.bar {
+  margin-top: var(--space-lg);
+  height: 2px;
+  background: var(--color-rule-2);
+  overflow: hidden;
+}
+/* 진행바는 타 칠 때마다 갱신된다 — 트랜지션을 걸면 오히려 손보다 늦게 따라온다. */
+.bar__fill {
+  display: block;
+  height: 100%;
+  background: var(--color-accent-on-dark);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.hint {
+  margin: var(--space-sm) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  color: var(--color-on-graphite-mute);
+}
+.hint kbd {
+  font: inherit;
+  color: var(--color-on-graphite-dim);
+  border: var(--rule) solid var(--color-rule-2);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   H4 · Stat-Led readout
+   ───────────────────────────────────────────────────────────── */
+.readout__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-xl) var(--space-2xl);
+  align-items: end;
+  padding-block: clamp(2rem, 5vw, var(--space-3xl)) var(--space-2xl);
+}
+.figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin: 0;
+}
+.figure__num {
+  font-family: var(--font-display);
+  font-size: var(--text-figure);
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  transition: font-size var(--dur-mid) var(--ease-out);
+}
+.is-done .figure__num { font-size: var(--text-figure-lg); color: var(--color-accent); }
+.figure__unit {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  color: var(--color-neutral);
+}
+.figure__head {
+  margin-top: var(--space-md);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: -0.025em;
+}
+.figure__status {
+  margin: var(--space-xs) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.sub {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin: 0;
+  border-top: var(--rule) solid var(--color-rule);
+  padding-top: var(--space-md);
+}
+.sub dt {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-neutral);
+}
+.sub dd {
+  margin: var(--space-2xs) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   F3 · Tabular record ledger
+   ───────────────────────────────────────────────────────────── */
+.record {
+  border-top: var(--rule) solid var(--color-rule);
+  background: var(--color-paper-2);
+}
+.record__inner { padding-block: var(--space-2xl) var(--space-3xl); }
+.record__head {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.record__lede {
+  margin: var(--space-2xs) 0 var(--space-lg);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.ledger-wrap { overflow-x: auto; }
+.ledger {
+  width: 100%;
+  max-width: 46rem;
+  min-width: 30rem;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.ledger th, .ledger td {
+  text-align: right;
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: var(--rule) solid var(--color-rule);
+  font-size: var(--text-sm);
+}
+.ledger th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-neutral);
+  white-space: nowrap;
+}
+.ledger th:first-child, .ledger td:first-child { text-align: left; padding-left: 0; }
+.ledger td:last-child, .ledger th:last-child { padding-right: 0; }
+.ledger td { color: var(--color-ink-2); }
+.ledger td.num { font-family: var(--font-display); font-weight: 500; color: var(--color-ink); }
+.ledger tr.is-slow td.num { color: var(--color-muted); }
+.ledger td.warn { color: var(--color-error); }
+.ledger .line { color: var(--color-muted); }
+
+.record__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+.best {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+}
+.best b { color: var(--color-accent-hover); font-weight: 600; }
+
+/* Ft2 · Inline single line */
+.foot {
+  border-top: var(--rule) solid var(--color-rule);
+}
+.foot__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  padding-block: var(--space-lg) var(--space-2xl);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  color: var(--color-neutral);
+}
+
+/* ── Motion: reveal (the only entrance) ──────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--dur-long) var(--ease-out),
+              transform var(--dur-long) var(--ease-out);
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 60rem) {
+  .readout__inner { grid-template-columns: minmax(0, 1fr); align-items: start; }
+}
+@media (max-width: 40rem) {
+  /* 지문 선택은 한 줄을 통째로 쓴다 — 두 칸이 같은 폭이라 엄지로 누르기 쉽다. */
+  .nav__right { width: 100%; gap: var(--space-xs); }
+  .seg { flex: 1; min-width: 0; }
+  .seg__btn { flex: 1; min-width: 0; min-height: 44px; padding: 0 var(--space-2xs); }
+  .sub { gap: var(--space-sm); }
+  .sub dd { font-size: var(--text-base); }
+  .figure__head { font-size: var(--text-md); }
+  .record__foot .btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .bar__fill { transition: none; }
+  .c, .btn, .entry__field, .figure__num { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="shell nav__inner">
+    <span class="wordmark">타자연습</span>
+    <div class="nav__right">
+      <div class="seg" role="radiogroup" aria-label="지문 선택" id="seg">
+        <button type="button" class="seg__btn" role="radio" aria-checked="true"  data-course="ko">애국가</button>
+        <button type="button" class="seg__btn" role="radio" aria-checked="false" data-course="en">Gettysburg</button>
+      </div>
+      <button type="button" class="btn btn--outline" id="restart">처음부터</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- The one dark band · the typing stage -->
+  <section class="stage" id="stage" data-course="ko" aria-label="타자 연습">
+    <div class="shell stage__inner">
+      <p class="stage__meta">
+        <span class="stage__where"><b id="verse">1절</b> · <span id="lineNo">01</span> / <span id="lineTotal">16</span></span>
+        <span class="stage__clock" id="clock">00:00</span>
+      </p>
+
+      <p class="prompt" id="prompt" aria-hidden="true"></p>
+      <p class="sr" id="promptText" aria-live="polite"></p>
+
+      <div class="entry">
+        <label class="sr" for="entry">현재 줄을 그대로 입력하세요</label>
+        <input class="entry__field" id="entry" type="text" inputmode="text" lang="ko" size="1"
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+               aria-describedby="promptText" placeholder="여기에 입력" />
+      </div>
+
+      <p class="ime" id="ime" hidden>영문 지문입니다 — 한/영 키를 눌러 영문 입력으로 바꿔주세요.</p>
+
+      <div class="ahead" aria-label="다음에 올 줄">
+        <p class="ahead__line" id="ahead1"></p>
+        <p class="ahead__line" id="ahead2"></p>
+      </div>
+
+      <div class="bar"><span class="bar__fill" id="bar"></span></div>
+      <p class="hint" id="hint"><kbd>Enter</kbd> 다음 줄 · <kbd>Esc</kbd> 처음부터 · 붙여넣기는 막혀 있습니다</p>
+    </div>
+  </section>
+
+  <!-- Stat-Led readout -->
+  <section class="readout" id="readout" aria-label="속도 계측">
+    <div class="shell readout__inner">
+      <div>
+        <p class="figure">
+          <span class="figure__num" id="kpm">0</span>
+          <span class="figure__unit" id="unit">타 / 분</span>
+        </p>
+        <h1 class="figure__head" id="head">분당 타수를 두벌식 자소 기준으로 셉니다.</h1>
+        <p class="figure__status" id="status" aria-live="polite">첫 글자를 치면 시계가 돕니다.</p>
+      </div>
+
+      <dl class="sub">
+        <div>
+          <dt>정확도</dt>
+          <dd id="acc">—</dd>
+        </div>
+        <div>
+          <dt>친 타수</dt>
+          <dd id="strokes">0</dd>
+        </div>
+        <div>
+          <dt>진행</dt>
+          <dd id="prog">0 / 16</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Record ledger -->
+  <section class="record reveal" id="record" hidden aria-label="줄별 기록">
+    <div class="shell record__inner">
+      <h2 class="record__head">줄별 기록</h2>
+      <p class="record__lede">느린 줄은 흐리게 표시했습니다. 그 줄이 다음에 줄일 시간입니다.</p>
+
+      <div class="ledger-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">줄</th>
+              <th scope="col" id="ledgerRate">타 / 분</th>
+              <th scope="col">정확도</th>
+              <th scope="col">걸린 시간</th>
+            </tr>
+          </thead>
+          <tbody id="ledger"></tbody>
+        </table>
+      </div>
+
+      <div class="record__foot">
+        <p class="best" id="best"></p>
+        <button type="button" class="btn btn--primary" id="again">다시 치기</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="shell foot__inner">
+    <span>한글 타수는 두벌식 자소, 영문은 5자 = 1단어</span>
+    <span>·</span>
+    <span>기록은 이 브라우저에만 저장됩니다</span>
+    <span>·</span>
+    <span id="source">대한민국 애국가 1–4절</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ── 지문 ────────────────────────────────────────────────────
+     ko · 대한민국 애국가 1–4절 — 각 절 2줄 + 후렴 2줄 = 16줄
+     en · The Gettysburg Address (1863, Bliss copy) — 32줄
+          원문의 em dash(—)는 표준 자판으로 칠 수 없어 그 자리에서 줄을 끊었다.
+          단어와 문장부호는 하나도 바꾸지 않았다.
+
+     perMin — 속도의 단위가 언어마다 다르다.
+       한글: 분당 타수(두벌식 자소)
+       영문: 표준 WPM = (친 글자 ÷ 5) ÷ 분                              */
+  const COURSES = {
+    ko: {
+      unit: '타 / 분',
+      head: '분당 타수를 두벌식 자소 기준으로 셉니다.',
+      source: '대한민국 애국가 1–4절',
+      perMin: (s, m) => s / m,
+      lines: [
+        { v: '1절',  t: '동해물과 백두산이 마르고 닳도록' },
+        { v: '1절',  t: '하느님이 보우하사 우리나라 만세' },
+        { v: '후렴', t: '무궁화 삼천리 화려강산' },
+        { v: '후렴', t: '대한사람 대한으로 길이 보전하세' },
+        { v: '2절',  t: '남산 위에 저 소나무 철갑을 두른 듯' },
+        { v: '2절',  t: '바람서리 불변함은 우리 기상일세' },
+        { v: '후렴', t: '무궁화 삼천리 화려강산' },
+        { v: '후렴', t: '대한사람 대한으로 길이 보전하세' },
+        { v: '3절',  t: '가을 하늘 공활한데 높고 구름 없이' },
+        { v: '3절',  t: '밝은 달은 우리 가슴 일편단심일세' },
+        { v: '후렴', t: '무궁화 삼천리 화려강산' },
+        { v: '후렴', t: '대한사람 대한으로 길이 보전하세' },
+        { v: '4절',  t: '이 기상과 이 맘으로 충성을 다하여' },
+        { v: '4절',  t: '괴로우나 즐거우나 나라 사랑하세' },
+        { v: '후렴', t: '무궁화 삼천리 화려강산' },
+        { v: '후렴', t: '대한사람 대한으로 길이 보전하세' }
+      ]
+    },
+    en: {
+      unit: 'WPM',
+      head: '5자를 한 단어로 세는 표준 WPM 기준입니다.',
+      source: 'The Gettysburg Address, 1863 · 줄 나눔은 원문의 대시 자리',
+      perMin: (s, m) => s / 5 / m,
+      lines: [
+        { v: '1문단', t: 'Four score and seven years ago our fathers' },
+        { v: '1문단', t: 'brought forth on this continent, a new nation,' },
+        { v: '1문단', t: 'conceived in Liberty, and dedicated to the proposition' },
+        { v: '1문단', t: 'that all men are created equal.' },
+        { v: '2문단', t: 'Now we are engaged in a great civil war, testing whether' },
+        { v: '2문단', t: 'that nation, or any nation so conceived and so dedicated,' },
+        { v: '2문단', t: 'can long endure. We are met on a great battle-field' },
+        { v: '2문단', t: 'of that war. We have come to dedicate a portion of that' },
+        { v: '2문단', t: 'field, as a final resting place for those who here gave' },
+        { v: '2문단', t: 'their lives that that nation might live.' },
+        { v: '2문단', t: 'It is altogether fitting and proper that we should do this.' },
+        { v: '3문단', t: 'But, in a larger sense, we can not dedicate' },
+        { v: '3문단', t: 'we can not consecrate' },
+        { v: '3문단', t: 'we can not hallow this ground.' },
+        { v: '3문단', t: 'The brave men, living and dead, who struggled here,' },
+        { v: '3문단', t: 'have consecrated it, far above our poor power to add' },
+        { v: '3문단', t: 'or detract. The world will little note, nor long remember' },
+        { v: '3문단', t: 'what we say here, but it can never forget' },
+        { v: '3문단', t: 'what they did here. It is for us the living, rather,' },
+        { v: '3문단', t: 'to be dedicated here to the unfinished work which they' },
+        { v: '3문단', t: 'who fought here have thus far so nobly advanced.' },
+        { v: '3문단', t: 'It is rather for us to be here dedicated to the great task' },
+        { v: '3문단', t: 'remaining before us' },
+        { v: '3문단', t: 'that from these honored dead we take increased devotion' },
+        { v: '3문단', t: 'to that cause for which they gave' },
+        { v: '3문단', t: 'the last full measure of devotion' },
+        { v: '3문단', t: 'that we here highly resolve that these dead' },
+        { v: '3문단', t: 'shall not have died in vain' },
+        { v: '3문단', t: 'that this nation, under God,' },
+        { v: '3문단', t: 'shall have a new birth of freedom' },
+        { v: '3문단', t: 'and that government of the people, by the people,' },
+        { v: '3문단', t: 'for the people, shall not perish from the earth.' }
+      ]
+    }
+  };
+
+  let courseId = 'ko';
+  const course = () => COURSES[courseId];
+  const LINES = () => COURSES[courseId].lines;
+  const HANGUL = /[가-힣ㄱ-ㅎㅏ-ㅣ]/;
+
+  /* ── 두벌식 자소(타수) 계산 ──────────────────────────────────
+     한 음절의 타수 = 초성 1 + 중성(복합모음이면 2) + 종성(겹받침이면 2).
+     쌍자음·쌍모음은 Shift 조합이라 1타로 센다. 그 외 문자는 1타. */
+  const CHO  = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  const JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+  const JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  const JUNG_D = { 'ㅘ':'ㅗㅏ','ㅙ':'ㅗㅐ','ㅚ':'ㅗㅣ','ㅝ':'ㅜㅓ','ㅞ':'ㅜㅔ','ㅟ':'ㅜㅣ','ㅢ':'ㅡㅣ' };
+  const JONG_D = { 'ㄳ':'ㄱㅅ','ㄵ':'ㄴㅈ','ㄶ':'ㄴㅎ','ㄺ':'ㄹㄱ','ㄻ':'ㄹㅁ','ㄼ':'ㄹㅂ',
+                   'ㄽ':'ㄹㅅ','ㄾ':'ㄹㅌ','ㄿ':'ㄹㅍ','ㅀ':'ㄹㅎ','ㅄ':'ㅂㅅ' };
+
+  const SYL_A = 0xAC00, SYL_Z = 0xD7A3;
+
+  function jamos(ch) {
+    const c = ch.codePointAt(0);
+    if (c >= SYL_A && c <= SYL_Z) {
+      const s = c - SYL_A;
+      const jung = JUNG[Math.floor(s / 28) % 21];
+      const jong = JONG[s % 28];
+      return CHO[Math.floor(s / 588)] + (JUNG_D[jung] || jung) + (jong ? (JONG_D[jong] || jong) : '');
+    }
+    if (c >= 0x3131 && c <= 0x3163) return JUNG_D[ch] || JONG_D[ch] || ch;
+    return ch;
+  }
+
+  function strokes(ch) {
+    const c = ch.codePointAt(0);
+    if (c >= SYL_A && c <= SYL_Z) return jamos(ch).length;
+    if (c >= 0x3131 && c <= 0x3163) return (JUNG_D[ch] || JONG_D[ch]) ? 2 : 1;
+    return 1;
+  }
+
+  // 조합 중인 글자: 지금까지 친 자소가 목표 글자의 앞부분이면 아직 틀린 게 아니다.
+  const prefixOk = (typed, target) => jamos(target).startsWith(jamos(typed));
+
+  /* ── DOM ──────────────────────────────────────────────────── */
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    stage: $('stage'), prompt: $('prompt'), promptText: $('promptText'), entry: $('entry'),
+    verse: $('verse'), lineNo: $('lineNo'), lineTotal: $('lineTotal'),
+    clock: $('clock'), bar: $('bar'), hint: $('hint'), ime: $('ime'),
+    ahead1: $('ahead1'), ahead2: $('ahead2'),
+    kpm: $('kpm'), unit: $('unit'), head: $('head'),
+    acc: $('acc'), strokes: $('strokes'), prog: $('prog'), status: $('status'),
+    readout: $('readout'), record: $('record'), ledger: $('ledger'),
+    ledgerRate: $('ledgerRate'), best: $('best'), source: $('source'),
+    seg: $('seg'), restart: $('restart'), again: $('again')
+  };
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bestKey = () => 'typing-best-v2-' + courseId;
+
+  /* ── 상태 ─────────────────────────────────────────────────── */
+  let idx = 0, cells = [], composing = false, done = false, booted = false;
+  let startedAt = null, lineStartedAt = null, ticker = null;
+  let sumStrokes = 0, sumOk = 0, sumDen = 0, liveStrokes = 0;
+  let results = [];
+
+  /* ── 지문 렌더 ────────────────────────────────────────────── */
+  function buildLine() {
+    const all = LINES();
+    const line = all[idx];
+    el.prompt.textContent = '';
+    el.promptText.textContent = line.v + ', ' + line.t;
+    cells = [];
+    let word = null;
+
+    for (const ch of line.t) {
+      const span = document.createElement('span');
+      span.className = 'c';
+      span.textContent = ch;
+      cells.push(span);
+      if (ch === ' ') {
+        span.classList.add('c--sp');
+        el.prompt.appendChild(span);
+        word = null;
+      } else {
+        if (!word) {
+          word = document.createElement('span');
+          word.className = 'w';
+          el.prompt.appendChild(word);
+        }
+        word.appendChild(span);
+      }
+    }
+
+    el.verse.textContent = line.v;
+    el.lineNo.textContent = String(idx + 1).padStart(2, '0');
+    el.ahead1.textContent = all[idx + 1] ? all[idx + 1].t : '';
+    el.ahead2.textContent = all[idx + 2] ? all[idx + 2].t : '';
+  }
+
+  /* 릴이 한 칸 올라간다. 입력 필드는 건드리지 않아 타이핑을 막지 않는다. */
+  const css = getComputedStyle(document.documentElement);
+  function advance() {
+    if (reduced) return;
+    const dur = parseFloat(css.getPropertyValue('--dur-mid')) || 260;
+    const ease = css.getPropertyValue('--ease-out').trim();
+    for (const node of [el.prompt, el.ahead1, el.ahead2]) {
+      node.animate(
+        [{ transform: 'translateY(0.45em)', opacity: 0.25 }, { transform: 'none', opacity: 1 }],
+        { duration: dur, easing: ease }
+      );
+    }
+  }
+
+  function paint() {
+    const typed = el.entry.value;
+    const target = LINES()[idx].t;
+    const compAt = composing ? typed.length - 1 : -1;
+    let ok = 0;
+
+    for (let i = 0; i < cells.length; i++) {
+      const c = cells[i];
+      c.className = 'c' + (target[i] === ' ' ? ' c--sp' : '');
+      if (i < typed.length) {
+        if (i === compAt) {
+          c.classList.add(prefixOk(typed[i], target[i]) ? 'is-now' : 'is-bad');
+        } else if (typed[i] === target[i]) {
+          c.classList.add('is-ok');
+          ok += strokes(target[i]);
+        } else {
+          c.classList.add('is-bad');
+        }
+      } else if (i === typed.length) {
+        c.classList.add('is-cursor');
+      }
+    }
+
+    liveStrokes = ok;
+    el.entry.classList.toggle('is-over', typed.length > target.length);
+    // 영문 지문에 한글이 들어오면 IME가 켜져 있다는 뜻이다.
+    el.ime.hidden = !(courseId === 'en' && HANGUL.test(typed));
+    setBar(typed.length / Math.max(target.length, 1));
+    refresh();
+  }
+
+  function setBar(frac) {
+    const p = (idx + Math.min(Math.max(frac, 0), 1)) / LINES().length;
+    el.bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+  }
+
+  /* ── 계측 ─────────────────────────────────────────────────── */
+  const minutes = () => Math.max((performance.now() - startedAt) / 60000, 1 / 60);
+
+  function refresh() {
+    if (done) return;
+    const rate = startedAt
+      ? Math.round(course().perMin(sumStrokes + liveStrokes, minutes()))
+      : 0;
+    el.kpm.textContent = rate;
+    el.strokes.textContent = sumStrokes + liveStrokes;
+    el.acc.textContent = sumDen ? Math.round((sumOk / sumDen) * 100) + '%' : '—';
+    el.prog.textContent = idx + ' / ' + LINES().length;
+  }
+
+  function startClock() {
+    if (ticker) return;
+    ticker = setInterval(() => {
+      if (!startedAt || done) return;
+      const s = Math.floor((performance.now() - startedAt) / 1000);
+      el.clock.textContent =
+        String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+      refresh();
+    }, 100);
+  }
+
+  /* ── 한 줄 확정 ───────────────────────────────────────────── */
+  function commit() {
+    if (done || !startedAt) return;
+    const all = LINES();
+    const typed = el.entry.value;
+    const target = all[idx].t;
+    if (!typed.length) return;
+
+    let s = 0, ok = 0;
+    for (let i = 0; i < target.length; i++) {
+      if (typed[i] === target[i]) { s += strokes(target[i]); ok++; }
+    }
+    const den = Math.max(typed.length, target.length);
+    const ms = performance.now() - lineStartedAt;
+
+    sumStrokes += s; sumOk += ok; sumDen += den; liveStrokes = 0;
+    results.push({
+      v: all[idx].v,
+      n: idx + 1,
+      rate: Math.round(course().perMin(s, Math.max(ms / 60000, 1 / 60))),
+      acc: Math.round((ok / den) * 100),
+      ms: ms
+    });
+
+    idx++;
+    el.entry.value = '';
+    if (idx >= all.length) { finish(); return; }
+
+    lineStartedAt = performance.now();
+    buildLine();
+    paint();
+    advance();
+    el.status.textContent = all[idx].v + ' · ' + (idx + 1) + '줄째';
+  }
+
+  /* ── 완주 ─────────────────────────────────────────────────── */
+  function finish() {
+    done = true;
+    clearInterval(ticker); ticker = null;
+
+    const c = course();
+    const unit = c.unit === 'WPM' ? 'WPM' : '타';
+    const total = LINES().length;
+    const totalMin = (performance.now() - startedAt) / 60000;
+    const rate = Math.round(c.perMin(sumStrokes, Math.max(totalMin, 1 / 60)));
+    const acc = Math.round((sumOk / sumDen) * 100);
+    const secs = Math.round(totalMin * 60);
+
+    el.entry.disabled = true;
+    el.entry.placeholder = '완주했습니다';
+    el.hint.innerHTML = '<kbd>Esc</kbd> 또는 아래 <b>다시 치기</b>로 처음부터';
+    el.stage.classList.add('is-done');
+    el.readout.classList.add('is-done');
+    el.ime.hidden = true;
+    el.strokes.textContent = sumStrokes;
+    el.acc.textContent = acc + '%';
+    el.prog.textContent = total + ' / ' + total;
+    el.status.textContent =
+      (courseId === 'en' ? '게티즈버그 연설 완주 · ' : '애국가 4절 완주 · ') +
+      Math.floor(secs / 60) + '분 ' + (secs % 60) + '초 · 총 ' + sumStrokes + '타';
+    setBar(1);
+    tick(el.kpm, rate);
+
+    el.ledger.textContent = '';
+    const slow = rate * 0.85;
+    for (const r of results) {
+      const tr = document.createElement('tr');
+      if (r.rate < slow) tr.className = 'is-slow';
+      tr.innerHTML =
+        '<td class="line">' + String(r.n).padStart(2, '0') + ' · ' + r.v + '</td>' +
+        '<td class="num">' + r.rate + '</td>' +
+        '<td' + (r.acc < 90 ? ' class="warn"' : '') + '>' + r.acc + '%</td>' +
+        '<td>' + (r.ms / 1000).toFixed(1) + '초</td>';
+      el.ledger.appendChild(tr);
+    }
+
+    let best = null;
+    try { best = JSON.parse(localStorage.getItem(bestKey()) || 'null'); } catch (e) { best = null; }
+    if (!best || rate > best.rate) {
+      const rec = { rate: rate, acc: acc, at: new Date().toISOString().slice(0, 10) };
+      try { localStorage.setItem(bestKey(), JSON.stringify(rec)); } catch (e) { /* 저장 불가 브라우저 */ }
+      el.best.innerHTML = best
+        ? '최고 기록 경신 — 지난 기록 ' + best.rate + unit + ' → <b>' + rate + unit + '</b>'
+        : '첫 기록 — <b>' + rate + unit + '</b>, 정확도 ' + acc + '%';
+    } else {
+      el.best.innerHTML =
+        '최고 기록 <b>' + best.rate + unit + '</b> (' + best.at + ') · 이번 ' + rate + unit;
+    }
+
+    el.record.hidden = false;
+    requestAnimationFrame(() => el.record.classList.add('is-in'));
+    // 포커스는 넘기되 화면은 튀지 않게. 큰 숫자가 올라가는 걸 봐야 한다.
+    el.again.focus({ preventScroll: true });
+  }
+
+  function tick(node, to) {
+    if (reduced) { node.textContent = to; return; }
+    const dur = 500;
+    let t0 = null;
+    // 시작 기준을 rAF 자신의 타임스탬프로 잡는다. performance.now()와 섞으면
+    // 시간 원점이 달라 p가 음수로 내려가 숫자가 음수로 찍힌다.
+    requestAnimationFrame(function frame(now) {
+      if (t0 === null) t0 = now;
+      const p = Math.min(Math.max((now - t0) / dur, 0), 1);
+      node.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(frame);
+    });
+    // rAF가 멈춘 탭에서도 최종 숫자는 반드시 남는다.
+    setTimeout(() => { node.textContent = to; }, dur + 120);
+  }
+
+  /* ── 지문 적용 ────────────────────────────────────────────── */
+  function applyCourse() {
+    const c = course();
+    el.stage.dataset.course = courseId;
+    el.entry.lang = courseId === 'en' ? 'en' : 'ko';
+    el.prompt.lang = el.ahead1.lang = el.ahead2.lang = el.entry.lang;
+    el.unit.textContent = c.unit;
+    el.head.textContent = c.head;
+    el.source.textContent = c.source;
+    el.ledgerRate.textContent = c.unit;
+    el.lineTotal.textContent = c.lines.length;
+    for (const btn of el.seg.querySelectorAll('.seg__btn')) {
+      btn.setAttribute('aria-checked', String(btn.dataset.course === courseId));
+    }
+  }
+
+  /* ── 초기화 ───────────────────────────────────────────────── */
+  function reset() {
+    clearInterval(ticker); ticker = null;
+    idx = 0; composing = false; done = false;
+    startedAt = null; lineStartedAt = null;
+    sumStrokes = 0; sumOk = 0; sumDen = 0; liveStrokes = 0;
+    results = [];
+
+    el.entry.disabled = false;
+    el.entry.value = '';
+    el.entry.placeholder = '여기에 입력';
+    el.entry.classList.remove('is-over');
+    el.stage.classList.remove('is-done');
+    el.readout.classList.remove('is-done');
+    el.record.hidden = true;
+    el.record.classList.remove('is-in');
+    el.ime.hidden = true;
+    el.clock.textContent = '00:00';
+    el.kpm.textContent = '0';
+    el.status.textContent = '첫 글자를 치면 시계가 돕니다.';
+    el.hint.innerHTML = '<kbd>Enter</kbd> 다음 줄 · <kbd>Esc</kbd> 처음부터 · 붙여넣기는 막혀 있습니다';
+
+    applyCourse();
+    buildLine();
+    paint();
+    setBar(0);
+    // 첫 진입 때 모바일 키보드를 강제로 올리지 않는다. 버튼으로 다시 시작할 땐 항상 포커스.
+    if (booted || window.matchMedia('(pointer: fine)').matches) el.entry.focus();
+    booted = true;
+  }
+
+  /* ── 이벤트 ───────────────────────────────────────────────── */
+  el.entry.addEventListener('compositionstart', () => { composing = true; });
+  el.entry.addEventListener('compositionend', () => { composing = false; paint(); });
+
+  el.entry.addEventListener('input', () => {
+    if (done) return;
+    if (!startedAt && el.entry.value.length) {
+      startedAt = performance.now();
+      lineStartedAt = startedAt;
+      startClock();
+      el.status.textContent = LINES()[idx].v + ' · 1줄째';
+    }
+    paint();
+  });
+
+  el.entry.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (e.isComposing || e.keyCode === 229) return;   // IME 조합 중 Enter는 확정용
+      e.preventDefault();
+      commit();
+    }
+  });
+
+  el.entry.addEventListener('paste', (e) => e.preventDefault());
+  el.entry.addEventListener('drop', (e) => e.preventDefault());
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); reset(); }
+  });
+
+  el.stage.addEventListener('mousedown', (e) => {
+    if (done || e.target === el.entry) return;
+    if (window.getSelection().toString()) return;
+    e.preventDefault();
+    el.entry.focus();
+  });
+
+  el.restart.addEventListener('click', reset);
+  el.again.addEventListener('click', reset);
+
+  // 지문 전환 — 진행 중이던 기록은 버린다(‘처음부터’와 같은 동작).
+  el.seg.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg__btn');
+    if (!btn || btn.dataset.course === courseId) return;
+    courseId = btn.dataset.course;
+    reset();
+  });
+
+  // 라디오 그룹은 좌우 방향키로도 움직여야 한다.
+  el.seg.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const btns = [...el.seg.querySelectorAll('.seg__btn')];
+    const next = btns[(btns.findIndex((b) => b.dataset.course === courseId)
+      + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length];
+    courseId = next.dataset.course;
+    reset();
+    next.focus();
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>
