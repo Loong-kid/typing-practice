@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>타자연습 — 애국가와 게티즈버그 연설</title>
-<meta name="description" content="웹에서 바로 치는 한글·영문 타자연습. 한글은 두벌식 자소 기준 분당 타수로, 영문은 표준 WPM으로 속도와 정확도를 재고 줄별 기록을 남깁니다." />
+<title>타자연습 — 한국어·영어 긴글</title>
+<meta name="description" content="웹에서 바로 치는 한국어·영어 타자연습. 애국가, 윤동주 서시, 김소월 진달래꽃, 이육사 청포도, 대한민국 헌법, 게티즈버그 연설. 한글은 두벌식 자소 기준 분당 타수, 영문은 표준 WPM." />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="ko_KR" />
 <meta property="og:url" content="https://loong-kid.github.io/typing-practice/" />
-<meta property="og:title" content="타자연습 — 애국가와 게티즈버그 연설" />
-<meta property="og:description" content="한글은 두벌식 자소 기준 분당 타수, 영문은 표준 WPM. 설치 없이 브라우저에서 바로." />
+<meta property="og:title" content="타자연습 — 한국어·영어 긴글" />
+<meta property="og:description" content="애국가·근대시·헌법·게티즈버그 연설. 한글은 두벌식 자소 기준 분당 타수, 영문은 표준 WPM. 설치 없이 브라우저에서 바로." />
 <meta name="twitter:card" content="summary" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,7 +25,7 @@
  * nav: N9 Edge-aligned minimal (knobs: CTA=outlined, wordmark=sans+accent square, padding=tight)
  * footer: Ft2 Inline single line (knobs: order=credit/wordmark, separator=middot, density=spaced)
  * enrichment: none — the typing stage is the artifact · tone: 계측적 · anchor hue: 256 (electric cobalt)
- * audience: 한국어 타자 속도를 재고 싶은 일반 사용자 · use: 애국가 16줄을 끝까지 치고 분당 타수를 확인
+ * audience: 한국어 타자 속도를 재고 싶은 일반 사용자 · use: 언어를 고르고 그 안의 지문을 끝까지 쳐서 속도를 확인
  */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -149,6 +149,43 @@ section, .shell { min-width: 0; }
   color: var(--color-paper);
   font-weight: 600;
 }
+
+/* 지문 드롭다운 — 지문이 10개로 늘어도 nav가 무너지지 않는다.
+   화살표는 currentColor로 그려서 토큰 밖 색이 생기지 않게 한다. */
+.pick { position: relative; display: flex; min-width: 0; }
+.pick::after {
+  content: "";
+  position: absolute;
+  right: var(--space-sm);
+  top: 50%;
+  width: 6px; height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  color: var(--color-neutral);
+  pointer-events: none;
+}
+.pick__field {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 calc(var(--space-md) + var(--space-sm)) 0 var(--space-sm);
+  border: var(--rule) solid var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+.pick__field:hover { border-color: var(--color-accent); }
+.pick__field:disabled { opacity: 0.5; cursor: default; }
+.pick__field:disabled + ::after,
+.pick:has(.pick__field:disabled)::after { opacity: 0.5; }
 
 /* ── Buttons ─────────────────────────────────────────────────── */
 .btn {
@@ -508,10 +545,13 @@ section, .shell { min-width: 0; }
   .readout__inner { grid-template-columns: minmax(0, 1fr); align-items: start; }
 }
 @media (max-width: 40rem) {
-  /* 지문 선택은 한 줄을 통째로 쓴다 — 두 칸이 같은 폭이라 엄지로 누르기 쉽다. */
-  .nav__right { width: 100%; gap: var(--space-xs); }
-  .seg { flex: 1; min-width: 0; }
+  /* 언어 탭과 지문 선택은 한 줄을 통째로 쓴다 — 엄지로 누를 수 있게. */
+  .nav__right { width: 100%; flex-wrap: wrap; gap: var(--space-xs); }
+  .seg { flex: 1 1 auto; min-width: 0; }
   .seg__btn { flex: 1; min-width: 0; min-height: 44px; padding: 0 var(--space-2xs); }
+  .pick { flex: 1 1 100%; order: 1; }
+  .pick__field { min-height: 44px; }
+  #restart { flex: 0 0 auto; }
   .sub { gap: var(--space-sm); }
   .sub dd { font-size: var(--text-base); }
   .figure__head { font-size: var(--text-md); }
@@ -531,9 +571,13 @@ section, .shell { min-width: 0; }
   <div class="shell nav__inner">
     <span class="wordmark">타자연습</span>
     <div class="nav__right">
-      <div class="seg" role="radiogroup" aria-label="지문 선택" id="seg">
-        <button type="button" class="seg__btn" role="radio" aria-checked="true"  data-course="ko">애국가</button>
-        <button type="button" class="seg__btn" role="radio" aria-checked="false" data-course="en">Gettysburg</button>
+      <div class="seg" role="radiogroup" aria-label="언어 선택" id="seg">
+        <button type="button" class="seg__btn" role="radio" aria-checked="true"  data-lang="ko">한국어</button>
+        <button type="button" class="seg__btn" role="radio" aria-checked="false" data-lang="en">English</button>
+      </div>
+      <div class="pick">
+        <label class="sr" for="pick">지문 선택</label>
+        <select class="pick__field" id="pick"></select>
       </div>
       <button type="button" class="btn btn--outline" id="restart">처음부터</button>
     </div>
@@ -718,9 +762,142 @@ section, .shell { min-width: 0; }
     }
   };
 
-  let courseId = 'ko';
-  const course = () => COURSES[courseId];
-  const LINES = () => COURSES[courseId].lines;
+  /* ── 한국어 지문 (추가분) ────────────────────────────────────
+     원문은 모두 위키문헌에서 받았다. 자판으로 칠 수 없는 문자가 있으면
+     그 부분만 손대고 무엇을 고쳤는지 각 지문의 source에 적어 화면에 띄운다. */
+
+  // 윤동주 「서시」 1941 — 1955년판 기준. 옛 붙여쓰기 3곳만 현행 맞춤법으로.
+  //   한점→한 점 · 죽어가는것을→죽어 가는 것을 · 오늘밤에도→오늘 밤에도
+  const SEOSI = [
+    { v: '1연', t: '죽는 날까지 하늘을 우러러' },
+    { v: '1연', t: '한 점 부끄럼이 없기를,' },
+    { v: '1연', t: '잎새에 이는 바람에도' },
+    { v: '1연', t: '나는 괴로워했다.' },
+    { v: '1연', t: '별을 노래하는 마음으로' },
+    { v: '1연', t: '모든 죽어 가는 것을 사랑해야지' },
+    { v: '1연', t: '그리고 나한테 주어진 길을' },
+    { v: '1연', t: '걸어가야겠다.' },
+    { v: '2연', t: '오늘 밤에도 별이 바람에 스치운다.' }
+  ];
+
+  // 김소월 「진달래꽃」 1925 — 초간본은 옛한글(ᄭᅩᆺ, ᄯᅢ)이라 현대 자판으로
+  //   입력 자체가 불가능하다. 그래서 현행 맞춤법 표기를 썼다.
+  const AZALEA = [
+    { v: '1연', t: '나 보기가 역겨워' },
+    { v: '1연', t: '가실 때에는' },
+    { v: '1연', t: '말없이 고이 보내 드리오리다' },
+    { v: '2연', t: '영변에 약산' },
+    { v: '2연', t: '진달래꽃' },
+    { v: '2연', t: '아름 따다 가실 길에 뿌리오리다' },
+    { v: '3연', t: '가시는 걸음걸음' },
+    { v: '3연', t: '놓인 그 꽃을' },
+    { v: '3연', t: '사뿐히 즈려밟고 가시옵소서' },
+    { v: '4연', t: '나 보기가 역겨워' },
+    { v: '4연', t: '가실 때에는' },
+    { v: '4연', t: '죽어도 아니 눈물 흘리오리다' }
+  ];
+
+  // 이육사 「청포도」 1939 — 원문 그대로. 한자 병기 靑袍만 뺐다(한자 입력 필요).
+  const GRAPE = [
+    { v: '1연', t: '내 고장 칠월은' },
+    { v: '1연', t: '청포도가 익어가는 시절' },
+    { v: '2연', t: '이 마을 전설이 주절이주절이 열리고' },
+    { v: '2연', t: '먼데 하늘이 꿈꾸며 알알이 들어와 박혀' },
+    { v: '3연', t: '하늘 밑 푸른 바다가 가슴을 열고' },
+    { v: '3연', t: '흰 돛단배가 곱게 밀려서 오면' },
+    { v: '4연', t: '내가 바라는 손님은 고달픈 몸으로' },
+    { v: '4연', t: '청포를 입고 찾아온다고 했으니' },
+    { v: '5연', t: '내 그를 맞아 이 포도를 따먹으면' },
+    { v: '5연', t: '두 손은 함뿍 적셔도 좋으련' },
+    { v: '6연', t: '아이야 우리 식탁엔 은쟁반에' },
+    { v: '6연', t: '하이얀 모시 수건을 마련해두렴' }
+  ];
+
+  // 대한민국 헌법 제1장 총강 — 저작권법 제7조로 보호 대상이 아니다.
+  //   가운뎃점(·)과 동그라미 숫자(①)는 표준 자판에 키가 없다.
+  //   그래서 ·가 들어간 제6·8·9조는 빼고, 항 번호는 지우고 항마다 줄을 나눴다.
+  const CONSTITUTION = [
+    { v: '제1조', t: '대한민국은 민주공화국이다.' },
+    { v: '제1조', t: '대한민국의 주권은 국민에게 있고,' },
+    { v: '제1조', t: '모든 권력은 국민으로부터 나온다.' },
+    { v: '제2조', t: '대한민국의 국민이 되는 요건은 법률로 정한다.' },
+    { v: '제2조', t: '국가는 법률이 정하는 바에 의하여' },
+    { v: '제2조', t: '재외국민을 보호할 의무를 진다.' },
+    { v: '제3조', t: '대한민국의 영토는 한반도와 그 부속도서로 한다.' },
+    { v: '제4조', t: '대한민국은 통일을 지향하며,' },
+    { v: '제4조', t: '자유민주적 기본질서에 입각한 평화적 통일 정책을' },
+    { v: '제4조', t: '수립하고 이를 추진한다.' },
+    { v: '제5조', t: '대한민국은 국제평화의 유지에 노력하고' },
+    { v: '제5조', t: '침략적 전쟁을 부인한다.' },
+    { v: '제5조', t: '국군은 국가의 안전보장과 국토방위의' },
+    { v: '제5조', t: '신성한 의무를 수행함을 사명으로 하며,' },
+    { v: '제5조', t: '그 정치적 중립성은 준수된다.' },
+    { v: '제7조', t: '공무원은 국민전체에 대한 봉사자이며,' },
+    { v: '제7조', t: '국민에 대하여 책임을 진다.' },
+    { v: '제7조', t: '공무원의 신분과 정치적 중립성은' },
+    { v: '제7조', t: '법률이 정하는 바에 의하여 보장된다.' },
+    { v: '제10조', t: '모든 국민은 인간으로서의 존엄과 가치를 가지며,' },
+    { v: '제10조', t: '행복을 추구할 권리를 가진다.' },
+    { v: '제10조', t: '국가는 개인이 가지는 불가침의 기본적 인권을' },
+    { v: '제10조', t: '확인하고 이를 보장할 의무를 진다.' }
+  ];
+
+  /* ── 언어 2단 구조 ──────────────────────────────────────────
+     위: 한국어 / English  ·  아래: 그 안의 지문 선택 */
+  const LANGS = {
+    ko: {
+      label: '한국어',
+      unit: '타 / 분',
+      head: '분당 타수를 두벌식 자소 기준으로 셉니다.',
+      perMin: (s, m) => s / m,
+      texts: {
+        anthem: {
+          label: '애국가',
+          source: '대한민국 애국가 1–4절',
+          lines: COURSES.ko.lines
+        },
+        seosi: {
+          label: '서시',
+          source: '윤동주 「서시」 1941 · 위키문헌 1955년판 · 띄어쓰기만 현행 맞춤법으로',
+          lines: SEOSI
+        },
+        azalea: {
+          label: '진달래꽃',
+          source: '김소월 「진달래꽃」 1925 · 초간본은 옛한글이라 현행 맞춤법 표기를 씀',
+          lines: AZALEA
+        },
+        grape: {
+          label: '청포도',
+          source: '이육사 「청포도」 1939 · 위키문헌 원문 · 한자 병기 靑袍만 생략',
+          lines: GRAPE
+        },
+        constitution: {
+          label: '헌법 제1장',
+          source: '대한민국 헌법 제1장 총강 · 가운뎃점이 든 제6·8·9조는 자판에 키가 없어 제외',
+          lines: CONSTITUTION
+        }
+      }
+    },
+    en: {
+      label: 'English',
+      unit: 'WPM',
+      head: '5자를 한 단어로 세는 표준 WPM 기준입니다.',
+      perMin: (s, m) => s / 5 / m,
+      texts: {
+        gettysburg: {
+          label: 'Gettysburg Address',
+          source: 'The Gettysburg Address, 1863 · 줄 나눔은 원문의 대시 자리',
+          lines: COURSES.en.lines
+        }
+      }
+    }
+  };
+
+  let langId = 'ko';
+  let textId = 'anthem';
+  const lang = () => LANGS[langId];
+  const text = () => LANGS[langId].texts[textId];
+  const LINES = () => text().lines;
   const HANGUL = /[가-힣ㄱ-ㅎㅏ-ㅣ]/;
 
   /* ── 두벌식 자소(타수) 계산 ──────────────────────────────────
@@ -768,10 +945,10 @@ section, .shell { min-width: 0; }
     acc: $('acc'), strokes: $('strokes'), prog: $('prog'), status: $('status'),
     readout: $('readout'), record: $('record'), ledger: $('ledger'),
     ledgerRate: $('ledgerRate'), best: $('best'), source: $('source'),
-    seg: $('seg'), restart: $('restart'), again: $('again')
+    seg: $('seg'), pick: $('pick'), restart: $('restart'), again: $('again')
   };
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const bestKey = () => 'typing-best-v2-' + courseId;
+  const bestKey = () => 'typing-best-v3-' + langId + '-' + textId;
 
   /* ── 상태 ─────────────────────────────────────────────────── */
   let idx = 0, cells = [], composing = false, done = false, booted = false;
@@ -853,7 +1030,7 @@ section, .shell { min-width: 0; }
     liveStrokes = ok;
     el.entry.classList.toggle('is-over', typed.length > target.length);
     // 영문 지문에 한글이 들어오면 IME가 켜져 있다는 뜻이다.
-    el.ime.hidden = !(courseId === 'en' && HANGUL.test(typed));
+    el.ime.hidden = !(langId === 'en' && HANGUL.test(typed));
     setBar(typed.length / Math.max(target.length, 1));
     refresh();
   }
@@ -869,7 +1046,7 @@ section, .shell { min-width: 0; }
   function refresh() {
     if (done) return;
     const rate = startedAt
-      ? Math.round(course().perMin(sumStrokes + liveStrokes, minutes()))
+      ? Math.round(lang().perMin(sumStrokes + liveStrokes, minutes()))
       : 0;
     el.kpm.textContent = rate;
     el.strokes.textContent = sumStrokes + liveStrokes;
@@ -907,7 +1084,7 @@ section, .shell { min-width: 0; }
     results.push({
       v: all[idx].v,
       n: idx + 1,
-      rate: Math.round(course().perMin(s, Math.max(ms / 60000, 1 / 60))),
+      rate: Math.round(lang().perMin(s, Math.max(ms / 60000, 1 / 60))),
       acc: Math.round((ok / den) * 100),
       ms: ms
     });
@@ -928,7 +1105,7 @@ section, .shell { min-width: 0; }
     done = true;
     clearInterval(ticker); ticker = null;
 
-    const c = course();
+    const c = lang();
     const unit = c.unit === 'WPM' ? 'WPM' : '타';
     const total = LINES().length;
     const totalMin = (performance.now() - startedAt) / 60000;
@@ -946,7 +1123,7 @@ section, .shell { min-width: 0; }
     el.acc.textContent = acc + '%';
     el.prog.textContent = total + ' / ' + total;
     el.status.textContent =
-      (courseId === 'en' ? '게티즈버그 연설 완주 · ' : '애국가 4절 완주 · ') +
+      text().label + ' 완주 · ' +
       Math.floor(secs / 60) + '분 ' + (secs % 60) + '초 · 총 ' + sumStrokes + '타';
     setBar(1);
     tick(el.kpm, rate);
@@ -1001,18 +1178,45 @@ section, .shell { min-width: 0; }
 
   /* ── 지문 적용 ────────────────────────────────────────────── */
   function applyCourse() {
-    const c = course();
-    el.stage.dataset.course = courseId;
-    el.entry.lang = courseId === 'en' ? 'en' : 'ko';
+    const L = lang(), T = text();
+    el.stage.dataset.course = langId;
+    el.entry.lang = langId === 'en' ? 'en' : 'ko';
     el.prompt.lang = el.ahead1.lang = el.ahead2.lang = el.entry.lang;
-    el.unit.textContent = c.unit;
-    el.head.textContent = c.head;
-    el.source.textContent = c.source;
-    el.ledgerRate.textContent = c.unit;
-    el.lineTotal.textContent = c.lines.length;
+    el.unit.textContent = L.unit;
+    el.head.textContent = L.head;
+    el.source.textContent = T.source;
+    el.ledgerRate.textContent = L.unit;
+    el.lineTotal.textContent = T.lines.length;
+
     for (const btn of el.seg.querySelectorAll('.seg__btn')) {
-      btn.setAttribute('aria-checked', String(btn.dataset.course === courseId));
+      btn.setAttribute('aria-checked', String(btn.dataset.lang === langId));
     }
+
+    // 지문 드롭다운은 선택된 언어의 목록으로 다시 채운다.
+    el.pick.textContent = '';
+    for (const [id, t] of Object.entries(L.texts)) {
+      const o = document.createElement('option');
+      o.value = id;
+      o.textContent = t.label + ' · ' + t.lines.length + '줄';
+      if (id === textId) o.selected = true;
+      el.pick.appendChild(o);
+    }
+    // 지문이 하나뿐이면 고를 게 없다.
+    el.pick.disabled = Object.keys(L.texts).length < 2;
+  }
+
+  // 언어를 바꾸면 그 언어의 첫 지문으로 간다.
+  function setLang(id) {
+    if (id === langId || !LANGS[id]) return;
+    langId = id;
+    textId = Object.keys(LANGS[id].texts)[0];
+    reset();
+  }
+
+  function setText(id) {
+    if (id === textId || !lang().texts[id]) return;
+    textId = id;
+    reset();
   }
 
   /* ── 초기화 ───────────────────────────────────────────────── */
@@ -1086,12 +1290,10 @@ section, .shell { min-width: 0; }
   el.restart.addEventListener('click', reset);
   el.again.addEventListener('click', reset);
 
-  // 지문 전환 — 진행 중이던 기록은 버린다(‘처음부터’와 같은 동작).
+  // 언어 전환 — 진행 중이던 기록은 버린다(‘처음부터’와 같은 동작).
   el.seg.addEventListener('click', (e) => {
     const btn = e.target.closest('.seg__btn');
-    if (!btn || btn.dataset.course === courseId) return;
-    courseId = btn.dataset.course;
-    reset();
+    if (btn) setLang(btn.dataset.lang);
   });
 
   // 라디오 그룹은 좌우 방향키로도 움직여야 한다.
@@ -1099,12 +1301,14 @@ section, .shell { min-width: 0; }
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const btns = [...el.seg.querySelectorAll('.seg__btn')];
-    const next = btns[(btns.findIndex((b) => b.dataset.course === courseId)
+    const next = btns[(btns.findIndex((b) => b.dataset.lang === langId)
       + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length];
-    courseId = next.dataset.course;
-    reset();
+    setLang(next.dataset.lang);
     next.focus();
   });
+
+  // 지문 선택
+  el.pick.addEventListener('change', () => setText(el.pick.value));
 
   reset();
 })();
