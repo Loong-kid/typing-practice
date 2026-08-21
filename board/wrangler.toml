@@ -6,9 +6,8 @@ compatibility_date = "2026-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "typing-board"
-database_id = "여기에-d1-create가-알려준-id를-붙여넣으세요"
+database_id = "be06f642-f61a-4302-bbb0-eeca476c78c2"
 
-# IP 해시용 소금. 아무 임의 문자열이면 된다.
-# 커밋하지 않으려면 대신:  wrangler secret put IP_SALT
-[vars]
-IP_SALT = "바꿔주세요-아무-임의-문자열"
+# IP 해시용 소금은 시크릿으로 둔다. 리포에 남기지 않는다.
+#   npx wrangler secret put IP_SALT
+# 설정하지 않아도 worker.js 에 기본값이 있어 동작은 한다.
