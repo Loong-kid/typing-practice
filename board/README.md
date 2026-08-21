@@ -13,24 +13,24 @@ Supabase 대신 고른 이유: **무료 Supabase 프로젝트는 7일간 활동�
 
 ## 배포 (한 번만)
 
-```bash
-npm install -g wrangler
-wrangler login
+wrangler는 따로 설치하지 않아도 `npx` 로 바로 쓸 수 있다.
 
+```bash
 cd board
+npx wrangler login          # 브라우저가 열리면 Allow
 
 # 1. D1 만들기 — 출력된 database_id 를 wrangler.toml 에 붙여넣는다
-wrangler d1 create typing-board
+npx wrangler d1 create typing-board
 
 # 2. wrangler.toml 열어서 두 곳을 채운다
 #    - database_id
 #    - IP_SALT  (아무 임의 문자열)
 
 # 3. 스키마 적용
-wrangler d1 execute typing-board --remote --file=./schema.sql
+npx wrangler d1 execute typing-board --remote --file=./schema.sql
 
 # 4. 배포 — 끝나면 https://typing-board.<계정>.workers.dev 주소가 나온다
-wrangler deploy
+npx wrangler deploy
 ```
 
 마지막에 나온 주소를 `../index.html` 맨 위 `BOARD_API` 에 넣으면 기록판이 켜진다.
@@ -88,6 +88,6 @@ wrangler deploy
 ## 이상한 기록 지우기
 
 ```bash
-wrangler d1 execute typing-board --remote --command \
+npx wrangler d1 execute typing-board --remote --command \
   "DELETE FROM scores WHERE id = 123"
 ```
