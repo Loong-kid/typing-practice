@@ -1,0 +1,10 @@
+# wrangler 로컬 캐시·상태 — 계정 정보가 들어갈 수 있고 리포에 필요 없다
+.wrangler/
+board/.wrangler/
+
+# 의존성
+node_modules/
+
+# OS
+Thumbs.db
+.DS_Store
