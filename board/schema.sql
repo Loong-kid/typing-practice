@@ -14,7 +14,8 @@ CREATE TABLE scores (
   acc        INTEGER NOT NULL,   -- 정확도 %
   strokes    INTEGER NOT NULL,   -- 정타 수
   ms         INTEGER NOT NULL,   -- 완주에 걸린 밀리초
-  line_count INTEGER NOT NULL,   -- 지문 줄 수
+  line_count INTEGER NOT NULL,   -- 지문 전체 줄 수 (서버가 안다)
+  lines_done INTEGER NOT NULL,   -- 실제로 친 줄 수. line_count 와 같으면 완주
   ip_hash    TEXT    NOT NULL,   -- 원본 IP는 저장하지 않는다. 도배 제한 용도로만 씀
   created_at INTEGER NOT NULL,   -- epoch ms
 
@@ -26,6 +27,7 @@ CREATE TABLE scores (
   CHECK (acc BETWEEN 0 AND 100),
   CHECK (strokes BETWEEN 1 AND 100000),
   CHECK (line_count BETWEEN 1 AND 500),
+  CHECK (lines_done BETWEEN 1 AND line_count),
   CHECK (ms >= 1000),
 
   -- ── 사람이 낼 수 있는 속도의 천장 ────────────────────────────
@@ -38,7 +40,8 @@ CREATE TABLE scores (
 
   -- ── 줄당 최소 시간 ───────────────────────────────────────────
   -- 한 줄을 0.3초 미만으로 칠 수는 없다.
-  CHECK (ms >= line_count * 300),
+  -- 중도 기록이 있으므로 전체 줄 수가 아니라 「실제로 친 줄 수」가 기준이다.
+  CHECK (ms >= lines_done * 300),
 
   -- ── 세 값이 서로 맞아야 한다 (핵심 제약) ─────────────────────
   -- rate 하나만 크게 불러도 소용없다. strokes·ms와 계산이 맞지 않으면 거부된다.
@@ -51,7 +54,7 @@ CREATE TABLE scores (
   )
 );
 
--- 지문별 순위 조회용
+-- 지문별 순위 조회용. 완주가 항상 위에 오도록 정렬하므로 완주 여부를 앞에 둔다.
 CREATE INDEX idx_scores_board ON scores (lang, text_id, rate DESC);
 -- 도배 제한 조회용
 CREATE INDEX idx_scores_rate_limit ON scores (ip_hash, created_at);

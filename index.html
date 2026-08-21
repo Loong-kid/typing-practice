@@ -499,6 +499,17 @@ section, .shell { min-width: 0; }
 /* 기록판은 앞 두 열(순위·닉네임)이 텍스트다. 숫자 열만 오른쪽으로 정렬한다. */
 #board .ledger th:nth-child(2),
 #board .ledger td:nth-child(2) { text-align: left; }
+#board .ledger { min-width: 34rem; }
+/* 중도 기록은 한 톤 낮춘다. 완주와 같은 무게로 보이면 안 된다. */
+.ledger tr.is-partial td { color: var(--color-muted); }
+.ledger tr.is-partial td.num { color: var(--color-muted); font-weight: 500; }
+.ledger tr.is-cut td { border-top: 2px solid var(--color-rule-strong); }
+.ledger td.prog {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  color: var(--color-neutral);
+}
 .ledger td.warn { color: var(--color-error); }
 .ledger .line { color: var(--color-muted); }
 
@@ -731,7 +742,7 @@ section, .shell { min-width: 0; }
       </div>
 
       <div class="submit" id="submit" hidden>
-        <p class="submit__ask">기록판에 올릴까요?</p>
+        <p class="submit__ask" id="submitAsk">기록판에 올릴까요?</p>
         <form class="submit__row" id="submitForm">
           <label class="sr" for="nick">닉네임</label>
           <input class="nick" id="nick" type="text" maxlength="12" autocomplete="nickname"
@@ -758,6 +769,7 @@ section, .shell { min-width: 0; }
               <th scope="col">닉네임</th>
               <th scope="col" id="boardRate">타 / 분</th>
               <th scope="col">정확도</th>
+              <th scope="col">진행</th>
               <th scope="col">날짜</th>
             </tr>
           </thead>
@@ -1050,6 +1062,7 @@ section, .shell { min-width: 0; }
     ledgerRate: $('ledgerRate'), best: $('best'), source: $('source'),
     seg: $('seg'), pick: $('pick'), restart: $('restart'), again: $('again'),
     submit: $('submit'), submitForm: $('submitForm'), nick: $('nick'),
+    submitAsk: $('submitAsk'),
     send: $('send'), skip: $('skip'), submitMsg: $('submitMsg'),
     board: $('board'), boardRows: $('boardRows'), boardRate: $('boardRate'),
     boardLede: $('boardLede'), boardEmpty: $('boardEmpty')
@@ -1217,6 +1230,8 @@ section, .shell { min-width: 0; }
     const c = lang();
     const unit = c.unit === 'WPM' ? 'WPM' : '타';
     const total = LINES().length;
+    const linesDone = idx;                 // 확정된(엔터를 친) 줄만 센다
+    const complete = linesDone >= total;
     // 등록 값은 정수 ms 하나에서 파생시킨다. rate와 ms가 서로 다른 기준에서
     // 나오면 서버의 정합성 제약(rate = strokes*60000/ms)에 걸린다.
     const elapsedMs = Math.max(Math.round(performance.now() - startedAt), 1000);
@@ -1226,21 +1241,21 @@ section, .shell { min-width: 0; }
     const secs = Math.round(totalMin * 60);
 
     lastRun = { lang: langId, text: textId, rate: rate, acc: acc,
-                strokes: sumStrokes, ms: elapsedMs };
+                strokes: sumStrokes, ms: elapsedMs, linesDone: linesDone };
 
     el.entry.disabled = true;
-    el.entry.placeholder = '완주했습니다';
+    el.entry.placeholder = complete ? '완주했습니다' : linesDone + '/' + total + '줄에서 멈췄습니다';
     el.hint.innerHTML = '<kbd>Esc</kbd> 또는 아래 <b>다시 치기</b>로 처음부터';
     el.stage.classList.add('is-done');
     el.readout.classList.add('is-done');
     el.ime.hidden = true;
     el.strokes.textContent = sumStrokes;
     el.acc.textContent = acc + '%';
-    el.prog.textContent = total + ' / ' + total;
+    el.prog.textContent = linesDone + ' / ' + total;
     el.status.textContent =
-      text().label + ' 완주 · ' +
+      text().label + (complete ? ' 완주 · ' : ' ' + linesDone + '/' + total + '줄에서 그만둠 · ') +
       Math.floor(secs / 60) + '분 ' + (secs % 60) + '초 · 총 ' + sumStrokes + '타';
-    setBar(1);
+    setBar(0);
     tick(el.kpm, rate);
 
     el.ledger.textContent = '';
@@ -1258,7 +1273,11 @@ section, .shell { min-width: 0; }
 
     let best = null;
     try { best = JSON.parse(localStorage.getItem(bestKey()) || 'null'); } catch (e) { best = null; }
-    if (!best || rate > best.rate) {
+    if (!complete) {
+      el.best.textContent =
+        '중도 기록 — ' + linesDone + '/' + total + '줄, ' + rate + unit +
+        (best ? ' · 이 지문 최고 ' + best.rate + unit : '');
+    } else if (!best || rate > best.rate) {
       const rec = { rate: rate, acc: acc, at: new Date().toISOString().slice(0, 10) };
       try { localStorage.setItem(bestKey(), JSON.stringify(rec)); } catch (e) { /* 저장 불가 브라우저 */ }
       el.best.innerHTML = best
@@ -1276,6 +1295,9 @@ section, .shell { min-width: 0; }
 
     if (BOARD_API) {
       el.submit.hidden = false;
+      el.submitAsk.textContent = complete
+        ? '기록판에 올릴까요?'
+        : linesDone + '/' + total + '줄까지의 기록을 올릴까요?';
       el.submitMsg.textContent = '';
       el.submitMsg.classList.remove('is-bad');
       el.send.disabled = false;
@@ -1311,7 +1333,7 @@ section, .shell { min-width: 0; }
     if (!BOARD_API) return;
     el.board.hidden = false;
     el.boardRate.textContent = lang().unit;
-    el.boardLede.textContent = text().label + ' · 지문마다 순위가 따로 매겨집니다.';
+    el.boardLede.textContent = text().label + ' · 끝까지 친 기록이 위에 오고, 중도 기록은 그 아래에 놓입니다.';
 
     let rows = null;
     try {
@@ -1333,15 +1355,25 @@ section, .shell { min-width: 0; }
       return;
     }
 
+    let firstPartial = true;
     rows.forEach((row, i) => {
       const tr = document.createElement('tr');
-      if (highlightNick && row.nick === highlightNick) tr.className = 'is-me';
+      const cls = [];
+      if (highlightNick && row.nick === highlightNick) cls.push('is-me');
+      const complete = row.lines_done >= row.line_count;
+      if (!complete) {
+        cls.push('is-partial');
+        // 완주 무리와 중도 무리 사이에 선을 한 번만 긋는다.
+        if (firstPartial) { cls.push('is-cut'); firstPartial = false; }
+      }
+      tr.className = cls.join(' ');
       // 닉네임은 남이 넣은 값이다. textContent로만 넣어 마크업으로 해석될 여지를 없앤다.
       const cells = [
         ['rank', String(i + 1)],
         ['', row.nick],
         ['num', String(row.rate)],
         ['', row.acc + '%'],
+        ['prog', complete ? '끝까지' : row.lines_done + ' / ' + row.line_count],
         ['', fmtDate(row.created_at)]
       ];
       for (const [cls, val] of cells) {
@@ -1454,7 +1486,7 @@ section, .shell { min-width: 0; }
     el.clock.textContent = '00:00';
     el.kpm.textContent = '0';
     el.status.textContent = '첫 글자를 치면 시계가 돕니다.';
-    el.hint.innerHTML = '<kbd>Enter</kbd> 다음 줄 · <kbd>Esc</kbd> 처음부터 · 붙여넣기는 막혀 있습니다';
+    el.hint.innerHTML = '<kbd>Enter</kbd> 다음 줄 · <kbd>Esc</kbd> 그만두기 — 친 데까지 기록으로 남길 수 있습니다';
 
     applyCourse();
     buildLine();
@@ -1493,7 +1525,12 @@ section, .shell { min-width: 0; }
   el.entry.addEventListener('drop', (e) => e.preventDefault());
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { e.preventDefault(); reset(); }
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    // 한 줄이라도 확정했으면 그 지점까지를 기록으로 남길 기회를 준다.
+    // 아직 한 줄도 못 넘겼으면 남길 게 없으니 그냥 처음부터.
+    if (!done && startedAt && idx > 0) finish();
+    else reset();
   });
 
   el.stage.addEventListener('mousedown', (e) => {

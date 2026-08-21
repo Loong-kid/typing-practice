@@ -74,13 +74,20 @@ export default {
       }
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 50);
 
-      // 닉네임 하나당 최고 기록 한 줄만 보여준다.
+      // 닉네임 하나당 대표 기록 한 줄만. 대표를 고르는 기준과 줄 세우는 기준이
+      // 같아야 한다 — 둘 다 「완주 먼저, 그다음 타수」.
       const { results } = await env.DB.prepare(
-        `SELECT nick, MAX(rate) AS rate, acc, ms, created_at
-           FROM scores
-          WHERE lang = ?1 AND text_id = ?2
-          GROUP BY nick
-          ORDER BY rate DESC, ms ASC
+        `SELECT nick, rate, acc, ms, lines_done, line_count, created_at
+           FROM (
+             SELECT *, ROW_NUMBER() OVER (
+                      PARTITION BY nick
+                      ORDER BY (lines_done = line_count) DESC, rate DESC, ms ASC
+                    ) AS rn
+               FROM scores
+              WHERE lang = ?1 AND text_id = ?2
+           )
+          WHERE rn = 1
+          ORDER BY (lines_done = line_count) DESC, rate DESC, ms ASC
           LIMIT ?3`
       ).bind(lang, textId, limit).all();
 
@@ -96,7 +103,7 @@ export default {
         return json({ error: '본문을 읽을 수 없습니다.' }, 400, origin);
       }
 
-      const { lang, text: textId, rate, acc, strokes, ms } = body;
+      const { lang, text: textId, rate, acc, strokes, ms, linesDone } = body;
 
       if (!TEXTS[lang] || !TEXTS[lang][textId]) {
         return json({ error: '알 수 없는 지문입니다.' }, 400, origin);
@@ -104,15 +111,19 @@ export default {
       const nick = cleanNick(body.nick);
       if (!nick) return json({ error: '닉네임을 입력해 주세요.' }, 400, origin);
 
-      const nums = { rate, acc, strokes, ms };
+      const nums = { rate, acc, strokes, ms, linesDone };
       for (const [k, v] of Object.entries(nums)) {
         if (!Number.isFinite(v) || !Number.isInteger(v) || v < 0) {
           return json({ error: k + ' 값이 올바르지 않습니다.' }, 400, origin);
         }
       }
 
-      // 줄 수는 서버가 안다. 클라이언트 값을 쓰지 않는다.
+      // 지문의 전체 줄 수는 서버가 안다. 클라이언트 값을 쓰지 않는다.
       const lineCount = TEXTS[lang][textId];
+      // 친 줄 수는 클라이언트만 아는 값이라 받되, 범위를 벗어나면 거부한다.
+      if (linesDone < 1 || linesDone > lineCount) {
+        return json({ error: '진행률이 올바르지 않습니다.' }, 400, origin);
+      }
 
       // 도배 제한
       const ipHash = await hashIp(
@@ -131,23 +142,34 @@ export default {
       // 여기서 통과시켜도 값이 서로 맞지 않으면 INSERT가 실패한다.
       try {
         await env.DB.prepare(
-          `INSERT INTO scores (lang, text_id, nick, rate, acc, strokes, ms, line_count, ip_hash, created_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`
-        ).bind(lang, textId, nick, rate, acc, strokes, ms, lineCount, ipHash, Date.now()).run();
+          `INSERT INTO scores (lang, text_id, nick, rate, acc, strokes, ms, line_count, lines_done, ip_hash, created_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`
+        ).bind(lang, textId, nick, rate, acc, strokes, ms, lineCount, linesDone, ipHash, Date.now()).run();
       } catch (e) {
         // CHECK 위반은 여기로 온다.
         return json({ error: '기록이 검증을 통과하지 못했습니다.' }, 422, origin);
       }
 
       // 등록 직후의 순위를 돌려줘서 클라이언트가 한 번 더 조회하지 않게 한다.
+      // 방금 기록보다 위에 있는 사람 수 + 1. 정렬 기준은 기록판과 동일하다.
+      const done = linesDone === lineCount ? 1 : 0;
       const rank = await env.DB.prepare(
         `SELECT COUNT(*) + 1 AS rank FROM (
-           SELECT nick, MAX(rate) AS rate FROM scores
-            WHERE lang = ?1 AND text_id = ?2 GROUP BY nick
-         ) WHERE rate > ?3`
-      ).bind(lang, textId, rate).first();
+           SELECT nick,
+                  MAX(CASE WHEN lines_done = line_count THEN 1 ELSE 0 END) AS full_done,
+                  MAX(rate) AS rate
+             FROM scores
+            WHERE lang = ?1 AND text_id = ?2
+            GROUP BY nick
+         )
+          WHERE nick <> ?3
+            AND (full_done > ?4 OR (full_done = ?4 AND rate > ?5))`
+      ).bind(lang, textId, nick, done, rate).first();
 
-      return json({ ok: true, nick, rank: rank ? rank.rank : null }, 201, origin);
+      return json({
+        ok: true, nick, rank: rank ? rank.rank : null,
+        linesDone, lineCount, complete: done === 1
+      }, 201, origin);
     }
 
     return json({ error: 'Not found' }, 404, origin);
