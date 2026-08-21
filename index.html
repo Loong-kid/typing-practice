@@ -496,6 +496,9 @@ section, .shell { min-width: 0; }
 .ledger td { color: var(--color-ink-2); }
 .ledger td.num { font-family: var(--font-display); font-weight: 500; color: var(--color-ink); }
 .ledger tr.is-slow td.num { color: var(--color-muted); }
+/* 기록판은 앞 두 열(순위·닉네임)이 텍스트다. 숫자 열만 오른쪽으로 정렬한다. */
+#board .ledger th:nth-child(2),
+#board .ledger td:nth-child(2) { text-align: left; }
 .ledger td.warn { color: var(--color-error); }
 .ledger .line { color: var(--color-muted); }
 
@@ -515,6 +518,64 @@ section, .shell { min-width: 0; }
   color: var(--color-muted);
 }
 .best b { color: var(--color-accent-hover); font-weight: 600; }
+
+/* ── 기록 등록 폼 ─────────────────────────────────────────────
+   완주 뒤에만 나타난다. 올리는 것도 안 올리는 것도 한 번의 클릭. */
+.submit {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: var(--rule) solid var(--color-rule);
+}
+.submit[hidden] { display: none; }
+.submit__ask {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+.submit__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: center;
+}
+.nick {
+  flex: 0 1 14rem;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--space-sm);
+  border: var(--rule) solid var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.nick::placeholder { color: var(--color-neutral); font-weight: 400; }
+.nick:focus { border-color: var(--color-accent); outline: none; }
+.submit__msg {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.submit__msg.is-bad { color: var(--color-error); }
+
+/* ── 기록판 ─────────────────────────────────────────────────── */
+.board {
+  border-top: var(--rule) solid var(--color-rule);
+}
+.board[hidden] { display: none; }
+.board__inner { padding-block: var(--space-2xl) var(--space-3xl); }
+.ledger tr.is-me td { color: var(--color-accent-hover); font-weight: 600; }
+.ledger td.rank { font-family: var(--font-mono); color: var(--color-neutral); }
+.board__empty {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
 
 /* Ft2 · Inline single line */
 .foot {
@@ -668,6 +729,42 @@ section, .shell { min-width: 0; }
         <p class="best" id="best"></p>
         <button type="button" class="btn btn--primary" id="again">다시 치기</button>
       </div>
+
+      <div class="submit" id="submit" hidden>
+        <p class="submit__ask">기록판에 올릴까요?</p>
+        <form class="submit__row" id="submitForm">
+          <label class="sr" for="nick">닉네임</label>
+          <input class="nick" id="nick" type="text" maxlength="12" autocomplete="nickname"
+                 placeholder="닉네임 (최대 12자)" />
+          <button type="submit" class="btn btn--primary" id="send">올리기</button>
+          <button type="button" class="btn btn--outline" id="skip">괜찮아요</button>
+        </form>
+        <p class="submit__msg" id="submitMsg"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 기록판 -->
+  <section class="board" id="board" hidden aria-label="기록판">
+    <div class="shell board__inner">
+      <h2 class="record__head">기록판</h2>
+      <p class="record__lede" id="boardLede">지문마다 순위가 따로 매겨집니다.</p>
+
+      <div class="ledger-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">순위</th>
+              <th scope="col">닉네임</th>
+              <th scope="col" id="boardRate">타 / 분</th>
+              <th scope="col">정확도</th>
+              <th scope="col">날짜</th>
+            </tr>
+          </thead>
+          <tbody id="boardRows"></tbody>
+        </table>
+      </div>
+      <p class="board__empty" id="boardEmpty" hidden></p>
     </div>
   </section>
 </main>
@@ -685,6 +782,12 @@ section, .shell { min-width: 0; }
 <script>
 (() => {
   'use strict';
+
+  /* ── 기록판 API 주소 ─────────────────────────────────────────
+     board/README.md 대로 Worker를 배포한 뒤 그 주소를 여기에 넣는다.
+     비워두면 기록판·닉네임 입력이 통째로 꺼지고 나머지는 그대로 동작한다.
+     예: 'https://typing-board.내계정.workers.dev'                    */
+  const BOARD_API = '';
 
   /* ── 지문 ────────────────────────────────────────────────────
      ko · 대한민국 애국가 1–4절 — 각 절 2줄 + 후렴 2줄 = 16줄
@@ -945,7 +1048,11 @@ section, .shell { min-width: 0; }
     acc: $('acc'), strokes: $('strokes'), prog: $('prog'), status: $('status'),
     readout: $('readout'), record: $('record'), ledger: $('ledger'),
     ledgerRate: $('ledgerRate'), best: $('best'), source: $('source'),
-    seg: $('seg'), pick: $('pick'), restart: $('restart'), again: $('again')
+    seg: $('seg'), pick: $('pick'), restart: $('restart'), again: $('again'),
+    submit: $('submit'), submitForm: $('submitForm'), nick: $('nick'),
+    send: $('send'), skip: $('skip'), submitMsg: $('submitMsg'),
+    board: $('board'), boardRows: $('boardRows'), boardRate: $('boardRate'),
+    boardLede: $('boardLede'), boardEmpty: $('boardEmpty')
   };
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bestKey = () => 'typing-best-v3-' + langId + '-' + textId;
@@ -955,6 +1062,8 @@ section, .shell { min-width: 0; }
   let startedAt = null, lineStartedAt = null, ticker = null;
   let sumStrokes = 0, sumOk = 0, sumDen = 0, liveStrokes = 0;
   let results = [];
+  let lastRun = null;   // 방금 끝낸 판 — 등록에 쓸 값
+  let sending = false;  // 등록 요청 진행 중 (중복 전송 방지)
 
   /* ── 지문 렌더 ────────────────────────────────────────────── */
   function buildLine() {
@@ -1108,10 +1217,16 @@ section, .shell { min-width: 0; }
     const c = lang();
     const unit = c.unit === 'WPM' ? 'WPM' : '타';
     const total = LINES().length;
-    const totalMin = (performance.now() - startedAt) / 60000;
-    const rate = Math.round(c.perMin(sumStrokes, Math.max(totalMin, 1 / 60)));
+    // 등록 값은 정수 ms 하나에서 파생시킨다. rate와 ms가 서로 다른 기준에서
+    // 나오면 서버의 정합성 제약(rate = strokes*60000/ms)에 걸린다.
+    const elapsedMs = Math.max(Math.round(performance.now() - startedAt), 1000);
+    const totalMin = elapsedMs / 60000;
+    const rate = Math.round(c.perMin(sumStrokes, totalMin));
     const acc = Math.round((sumOk / sumDen) * 100);
     const secs = Math.round(totalMin * 60);
+
+    lastRun = { lang: langId, text: textId, rate: rate, acc: acc,
+                strokes: sumStrokes, ms: elapsedMs };
 
     el.entry.disabled = true;
     el.entry.placeholder = '완주했습니다';
@@ -1158,6 +1273,15 @@ section, .shell { min-width: 0; }
     requestAnimationFrame(() => el.record.classList.add('is-in'));
     // 포커스는 넘기되 화면은 튀지 않게. 큰 숫자가 올라가는 걸 봐야 한다.
     el.again.focus({ preventScroll: true });
+
+    if (BOARD_API) {
+      el.submit.hidden = false;
+      el.submitMsg.textContent = '';
+      el.submitMsg.classList.remove('is-bad');
+      el.send.disabled = false;
+      el.nick.disabled = false;
+      try { el.nick.value = localStorage.getItem('typing-nick') || ''; } catch (e) { /* 무시 */ }
+    }
   }
 
   function tick(node, to) {
@@ -1174,6 +1298,91 @@ section, .shell { min-width: 0; }
     });
     // rAF가 멈춘 탭에서도 최종 숫자는 반드시 남는다.
     setTimeout(() => { node.textContent = to; }, dur + 120);
+  }
+
+  /* ── 기록판 ───────────────────────────────────────────────── */
+  const fmtDate = (ms) => {
+    const d = new Date(ms);
+    return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') +
+           '.' + String(d.getDate()).padStart(2, '0');
+  };
+
+  async function loadBoard(highlightNick) {
+    if (!BOARD_API) return;
+    el.board.hidden = false;
+    el.boardRate.textContent = lang().unit;
+    el.boardLede.textContent = text().label + ' · 지문마다 순위가 따로 매겨집니다.';
+
+    let rows = null;
+    try {
+      const r = await fetch(BOARD_API + '/board?lang=' + encodeURIComponent(langId) +
+                            '&text=' + encodeURIComponent(textId) + '&limit=20');
+      if (!r.ok) throw new Error(r.status);
+      rows = (await r.json()).rows || [];
+    } catch (e) {
+      el.boardRows.textContent = '';
+      el.boardEmpty.hidden = false;
+      el.boardEmpty.textContent = '기록판을 불러오지 못했습니다. 잠시 후 새로고침해 주세요.';
+      return;
+    }
+
+    el.boardRows.textContent = '';
+    el.boardEmpty.hidden = rows.length > 0;
+    if (!rows.length) {
+      el.boardEmpty.textContent = '아직 기록이 없습니다. 첫 기록을 남겨보세요.';
+      return;
+    }
+
+    rows.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      if (highlightNick && row.nick === highlightNick) tr.className = 'is-me';
+      // 닉네임은 남이 넣은 값이다. textContent로만 넣어 마크업으로 해석될 여지를 없앤다.
+      const cells = [
+        ['rank', String(i + 1)],
+        ['', row.nick],
+        ['num', String(row.rate)],
+        ['', row.acc + '%'],
+        ['', fmtDate(row.created_at)]
+      ];
+      for (const [cls, val] of cells) {
+        const td = document.createElement('td');
+        if (cls) td.className = cls;
+        td.textContent = val;
+        tr.appendChild(td);
+      }
+      el.boardRows.appendChild(tr);
+    });
+  }
+
+  async function sendScore(nick) {
+    if (sending) return;
+    sending = true;
+    el.send.disabled = true;
+    el.nick.disabled = true;
+    el.submitMsg.classList.remove('is-bad');
+    el.submitMsg.textContent = '올리는 중…';
+    try {
+      const r = await fetch(BOARD_API + '/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ nick: nick }, lastRun))
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || '등록에 실패했습니다.');
+      try { localStorage.setItem('typing-nick', nick); } catch (e) { /* 무시 */ }
+      el.submitMsg.textContent = data.rank
+        ? '올렸습니다 — 현재 ' + data.rank + '위'
+        : '올렸습니다.';
+      el.submitForm.hidden = true;
+      await loadBoard(nick);
+    } catch (e) {
+      el.submitMsg.classList.add('is-bad');
+      el.submitMsg.textContent = e.message;
+      el.send.disabled = false;
+      el.nick.disabled = false;
+    } finally {
+      sending = false;
+    }
   }
 
   /* ── 지문 적용 ────────────────────────────────────────────── */
@@ -1236,6 +1445,12 @@ section, .shell { min-width: 0; }
     el.record.hidden = true;
     el.record.classList.remove('is-in');
     el.ime.hidden = true;
+    el.submit.hidden = true;
+    el.submitForm.hidden = false;
+    el.submitMsg.textContent = '';
+    el.submitMsg.classList.remove('is-bad');
+    lastRun = null;
+    sending = false;
     el.clock.textContent = '00:00';
     el.kpm.textContent = '0';
     el.status.textContent = '첫 글자를 치면 시계가 돕니다.';
@@ -1248,6 +1463,7 @@ section, .shell { min-width: 0; }
     // 첫 진입 때 모바일 키보드를 강제로 올리지 않는다. 버튼으로 다시 시작할 땐 항상 포커스.
     if (booted || window.matchMedia('(pointer: fine)').matches) el.entry.focus();
     booted = true;
+    loadBoard();
   }
 
   /* ── 이벤트 ───────────────────────────────────────────────── */
@@ -1309,6 +1525,27 @@ section, .shell { min-width: 0; }
 
   // 지문 선택
   el.pick.addEventListener('change', () => setText(el.pick.value));
+
+  // 기록 등록
+  el.submitForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!lastRun) return;
+    const nick = el.nick.value.replace(/\s+/g, ' ').trim().slice(0, 12);
+    if (!nick) {
+      el.submitMsg.classList.add('is-bad');
+      el.submitMsg.textContent = '닉네임을 입력해 주세요.';
+      el.nick.focus();
+      return;
+    }
+    sendScore(nick);
+  });
+
+  // 거절 — 아무것도 보내지 않는다
+  el.skip.addEventListener('click', () => {
+    el.submitForm.hidden = true;
+    el.submitMsg.classList.remove('is-bad');
+    el.submitMsg.textContent = '이번 기록은 남기지 않았습니다.';
+  });
 
   reset();
 })();

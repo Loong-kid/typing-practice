@@ -1,0 +1,14 @@
+name = "typing-board"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# D1 바인딩. database_id 는 `wrangler d1 create` 가 찍어주는 값을 넣는다.
+[[d1_databases]]
+binding = "DB"
+database_name = "typing-board"
+database_id = "여기에-d1-create가-알려준-id를-붙여넣으세요"
+
+# IP 해시용 소금. 아무 임의 문자열이면 된다.
+# 커밋하지 않으려면 대신:  wrangler secret put IP_SALT
+[vars]
+IP_SALT = "바꿔주세요-아무-임의-문자열"
